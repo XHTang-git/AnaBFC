@@ -1,4 +1,4 @@
-# AnaBFC: Bias Field Correction for Whole-Body MRI with Weak Anatomical Supervision
+# AnaBFC
 
 Bias Field Correction for Whole-Body MRI with Weak Anatomical Supervision.
 
