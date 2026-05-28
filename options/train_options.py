@@ -17,20 +17,14 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--niter_decay', type=int, default=200, help='# of iter to linearly decay learning rate to zero')
         self.parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
         self.parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
-        self.parser.add_argument('--no_lsgan', default=False, help='do *not* use least square GAN, if false, use vanilla GAN')
-        # self.parser.add_argument('--lambda_A', type=float, default=2, help='L1_img')
-        # self.parser.add_argument('--lambda_B', type=float, default=0, help='distribution')
-        # self.parser.add_argument('--lambda_C', type=float, default=1.5, help='GAN_loss')
         self.parser.add_argument('--lambda_A', type=float, default=0, help='L1_img')
         self.parser.add_argument('--lambda_B', type=float, default=0, help='distribution')
         self.parser.add_argument('--lambda_C', type=float, default=0, help='GAN_loss')
         self.parser.add_argument('--lambda_D', type=float, default=1, help='loss_B_mean')
-        self.parser.add_argument('--lambda_E', type=float, default=20, help='B_smooth')
-        self.parser.add_argument('--lambda_F', type=float, default=0.3, help='SegmentUniformL')#1.3  238 0.55
-        self.parser.add_argument('--lambda_I', type=float, default=0.3, help='TNLinfer')#0
-        self.parser.add_argument('--lambda_G', type=float, default=0, help='RetinexL')#600
-        self.parser.add_argument('--lambda_H', type=float, default=0, help='ABCnetPL')#1.3
-
+        self.parser.add_argument('--lambda_E', type=float, default=15, help='B_smooth')
+        self.parser.add_argument('--lambda_F', type=float, default=0.3, help='SegmentUniformL')
+        self.parser.add_argument('--lambda_I', type=float, default=0.3, help='TNLinfer')
+        self.parser.add_argument('--lambda_H', type=float, default=0, help='ABCnetPL')
         self.parser.add_argument('--identity', type=float, default=0.0, help='use identity mapping. Setting identity other than 1 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set optidentity = 0.1')
         self.parser.add_argument('--pool_size', type=int, default=20, help='the size of image buffer that stores previously generated images')
         self.parser.add_argument('--no_html', action='store_true', help='do not save intermediate training results to [opt.checkpoints_dir]/[opt.name]/web/')

@@ -10,7 +10,7 @@ class TestOptions(BaseOptions):
         # self.parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
         self.parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
 
-        self.parser.add_argument('--which_epoch', type=str, default="300", help='which epoch to load? set to latest to use latest cached model')
+        self.parser.add_argument('--which_epoch', type=str, default="180", help='which epoch to load? set to latest to use latest cached model')
         self.parser.add_argument('--how_many', type=int, default=400, help='how many test images to run')
         self.parser.add_argument('--no_html', default=False, help='do not save intermediate training results to [opt.checkpoints_dir]/[opt.name]/web/')
         self.isTrain = False

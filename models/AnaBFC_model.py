@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 from torch.autograd import Variable
 import util.util as util
-from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks3d as networks
 from util.loss_functions import bias_mean_loss, smoothing_loss, \
@@ -315,7 +314,7 @@ class AnaBFC(BaseModel):
             visShow(self.input_W, images5, "W")
             visShow(self.input_F, images6, "F")
             visShow(self.input_M, images7, "M")
-            visShow(self.TissueNorm_M[:, 0:1], images8, "tissueNorm")
+            visShow(self.TissueNorm_M[:, 1:2], images8, "tissueNorm")
 
     def test(self):
         with torch.no_grad():
@@ -347,16 +346,16 @@ class AnaBFC(BaseModel):
         detached_fake_U = self.fake_U.detach()
 
         # (B, C, D, H, W) -> for current code use batch=1 setup
-        num_tissues = self.TissueNorm_M.shape[1]
+        num_classes = self.TissueNorm_M.shape[1]
         print("tissueNorm_shape:",self.TissueNorm_M.shape)
-        fake_U_repeated = detached_fake_U.repeat(num_tissues, 1, 1, 1, 1)
+        fake_U_repeated = detached_fake_U.repeat(num_classes, 1, 1, 1, 1)
         Uniform_U = torch.cat((self.TissueNorm_M.squeeze(0).unsqueeze(1), fake_U_repeated), dim=1)
 
         C_u = self.netTissueNorm.forward(Uniform_U)
         C_u = torch.clamp(C_u, 0.1, 10)
 
         uniform_template = torch.zeros_like(self.fake_U)
-        for num in range(num_tissues):
+        for num in range(num_classes):
             tissue_mask = self.TissueNorm_M[:, num:num+1, :, :, :]
             tissue_pixels = detached_fake_U * tissue_mask
             normalized_tissue_pixels = tissue_pixels * C_u[num]
@@ -379,8 +378,10 @@ class AnaBFC(BaseModel):
         else:
             self.loss_Luniform_train = torch.tensor(0.0, device=device)
             self.loss_Luniform_mean = torch.tensor(0.0, device=device)
+        print("loss_Luniform_train:",self.loss_Luniform_train)
+        print("loss_Luniform_mean:",self.loss_Luniform_mean)
 
-        self.loss_LTN_train = self.loss_Luniform_train * 2 + self.loss_Luniform_mean
+        self.loss_LTN_train = self.loss_Luniform_train + self.loss_Luniform_mean
         self.loss_LTN_train.backward(retain_graph=True)
 
         C_u_copy = C_u.detach()
@@ -390,8 +391,8 @@ class AnaBFC(BaseModel):
             max_rot_deg=5.0,
             max_shift=4,
             low_range=(1200, 8000),
-            sigma_range=(0.8, 1.5),
-            kernel_size=5,
+            sigma_range=(0.5, 1.5),
+            kernel_size=3,
             clip_min=0.03,
             clip_max=5.0
         )
@@ -405,9 +406,10 @@ class AnaBFC(BaseModel):
         Uniform_V = torch.cat((self.TissueNorm_M.squeeze(0).unsqueeze(1), real_V_repeated), dim=1)
 
         C_v = self.netTissueNorm.forward(Uniform_V)
-        C_v = torch.clamp(C_v, 0.2, 8)
+        C_v = torch.clamp(C_v, 0.2, 10)
 
         self.loss_C = self.criterionMSE(C_u_copy, C_v) * 1.0
+        print("loss_C:",self.loss_C)
         self.loss_C.backward()
 
     def backward_G(self):
@@ -422,8 +424,6 @@ class AnaBFC(BaseModel):
             self.loss_G_S2 = self.criterionSeg(self.real_V, self.fake_B, self.input_F,
                                                self.input_W_peak) * self.opt.lambda_F
             self.loss_B_mean = self.criterionBMean(self.fake_B, self.input_W, self.input_F)
-            self.RetinexLoss = self.criterionRetinex(self.fake_U, self.real_V, self.input_M,
-                                                     self.input_W_peak) * self.opt.lambda_G
             print("-----------------------------------------------------------------------------------")
             print("loss_smooth:",self.loss_smooth)
             print("loss_G_S1:",self.loss_G_S1)
@@ -441,7 +441,7 @@ class AnaBFC(BaseModel):
                 Uniform_U = torch.cat((self.TissueNorm_M.squeeze(0).unsqueeze(1), fake_U_repeated), dim=1)
 
                 C_u = self.netTissueNorm.forward(Uniform_U)
-                C_u = torch.clamp(C_u, 0.2, 8)
+                C_u = torch.clamp(C_u, 0.2, 10)
                 C_u_detach = C_u.detach()
 
                 uniform_template = torch.zeros_like(self.fake_U)
@@ -464,16 +464,9 @@ class AnaBFC(BaseModel):
                         (((masked_uniform_template - mean_unorm) ** 2) * combined_mask).sum() / num_pixels
                     )
                     self.loss_Luniform_infer = std_unorm / (mean_unorm + 1e-8) * self.opt.lambda_I
-                    self.loss_G = self.loss_G + self.loss_Luniform_infer
+                    print("loss_Luniform_infer:",self.loss_Luniform_infer)
 
-        else:
-            # -----------------------------
-            # 2) unlabeled loss
-            # only basic prior/smoothness
-            # -----------------------------
-            print("unlabeled")
-            self.loss_smooth = self.criterionSmooth(self.fake_B) * self.opt.lambda_E
-            self.loss_G = self.loss_G + self.loss_smooth
+                    self.loss_G = self.loss_G + self.loss_Luniform_infer
 
         # -----------------------------
         # 3) consistency regularization after warmup
@@ -488,8 +481,8 @@ class AnaBFC(BaseModel):
                 max_rot_deg=5.0,
                 max_shift=4,
                 low_range=(1200, 10000),
-                sigma_range=(0.8, 1.5),
-                kernel_size=5,
+                sigma_range=(0.5, 1.5),
+                kernel_size=3,
                 clip_min=0.03,
                 clip_max=5.0
             ).detach()
@@ -499,12 +492,7 @@ class AnaBFC(BaseModel):
             augment_U = augment_image / augment_B
             augment_U = torch.clamp(augment_U, min=0, max=15)
             self.loss_CR = self.criterionL1(augment_U, detached_fake_U)
-
-            # self.loss_CR_smooth = self.criterionSmooth(augment_B, self.input_shape) * 0.3
-            # self.loss_CR = self.criterionL1(detached_fake_B_aug, augment_B)
-
             self.loss_G = self.loss_G + self.loss_CR
-            # + self.loss_CR_smooth
 
         self.loss_G.backward()
 

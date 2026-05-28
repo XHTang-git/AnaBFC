@@ -16,7 +16,7 @@ class UnalignedDataset(BaseDataset):
         self.semi_warmup_iters = getattr(opt, "semi_warmup_iters", 0)
         self.num_labeled = getattr(opt, "num_labeled", 0)
         self.unlabeled_ratio = getattr(opt, "unlabeled_ratio", 0.5)
-
+        print("unlabeled_ratio",self.unlabeled_ratio)
         self.dir_img = os.path.join(opt.dataroot, opt.phase, "img")
         self.dir_bf = os.path.join(opt.dataroot, opt.phase, "bf_w_f_200")
         self.dir_N4WI = os.path.join(opt.dataroot, opt.phase, "N4WI_w_f_200")

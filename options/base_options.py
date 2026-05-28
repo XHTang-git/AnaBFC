@@ -14,8 +14,8 @@ class BaseOptions():
         self.parser.add_argument('--dataroot', type=str, default='E:\WBFC_2\mri_image', help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
         self.parser.add_argument('--num_labeled', type=int, default=105, help='number of supervised sample')
         self.parser.add_argument('--semi_warmup_iters', type=int, default=500, help='number of supervised sample')
-        self.parser.add_argument('--semi_supervised', type=bool, default=True, help='number of supervised sample')
-
+        self.parser.add_argument('--semi_supervised', type=bool, default=True, help='use semi-supervised')
+        self.parser.add_argument('--unlabeled_ratio', type=float, default=0.7, help='training ratio of unlabeled image')
         self.parser.add_argument('--batchSize', type=int, default=1, help='input batch size')
         self.parser.add_argument('--loadSize', type=int, default=256, help='scale images to this size')
         self.parser.add_argument('--fineSize', type=int, default=256, help='then crop to this size')
@@ -24,23 +24,12 @@ class BaseOptions():
         self.parser.add_argument('--output_nc', type=int, default=1, help='# of output image channels')
         self.parser.add_argument('--ngf', type=int, default=32, help='# of gen filters in first conv layer')
         self.parser.add_argument('--ndf', type=int, default=4, help='# of discrim filters in first conv layer')#dd
-        # self.parser.add_argument('--ndf', type=int, default=32, help='# of discrim filters in first conv layer')
-
         self.parser.add_argument('--which_model_netD', type=str, default='n_layers', help='selects model to use for netD')
         self.parser.add_argument('--which_model_netG', type=str, default='unet_128', help='selects model to use for netG')
-        # self.parser.add_argument('--which_model_netG', type=str, default='unet_128', help='selects model to use for netG')
-
         self.parser.add_argument('--n_layers_D', type=int, default=5, help='only used if which_model_netD==n_layers')
         self.parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
-        # self.parser.add_argument('--name', type=str, default='ABCnet', help='name of the experiment. It decides where to store samples and models')
-        # self.parser.add_argument('--name', type=str, default='model_last_wave_new_renorm_bf_2_1.5_0_softplus_300_retinex600_1.3_rectify', help='name of the experiment. It decides where to store samples and models')
-        # self.parser.add_argument('--name', type=str, default='N4_Net_6_retinex_20_1.5_0.5_120_seg_map', help='name of the experiment. It decides where to store samples and models')
-        # self.parser.add_argument('--name', type=str, default='N4_Net_6_retinex_20_1.5_0.5_50_seg_map', help='name of the experiment. It decides where to store samples and models')
-
-        # self.parser.add_argument('--name', type=str, default='N4_Wave_Net_1_15_0.5_seg_map_0.5', help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--name', type=str, default='UNet_1_20_0.6',
                                  help='name of the experiment. It decides where to store samples and models')
-
         self.parser.add_argument('--dataset_mode', type=str, default='unaligned',
                                  help='chooses how datasets are loaded. [unaligned | aligned | single]')
         self.parser.add_argument('--model', type=str, default='AnaBFC',
