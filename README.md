@@ -4,9 +4,9 @@ Bias Field Correction for Whole-Body MRI with Weak Anatomical Supervision.
 
 ## Overview
 
-Bias field correction in whole-body MRI is difficult because MRI artifacts and normal organ contrast often look similar across a large field of view[cite: 1]. Conventional methods struggle to tell them apart, sometimes removing important anatomical details.
+Bias field correction in whole-body MRI is difficult because MRI artifacts and normal organ contrast often look similar across a large field of view. Conventional methods struggle to tell them apart, sometimes removing important anatomical details.
 
-To address this, we introduce **AnaBFC**, an anatomy-aware framework that separates acquisition artifacts from normal tissue signals[cite: 1]. Using weak anatomical supervision, AnaBFC successfully removes intensity inhomogeneity while preserving essential anatomical structures and image contrast.
+To address this, we introduce **AnaBFC**, an anatomy-aware framework that separates acquisition artifacts from normal tissue signals. Using weak anatomical supervision, AnaBFC successfully removes intensity inhomogeneity while preserving essential anatomical structures and image contrast.
 
 
 ## Repository Structure
