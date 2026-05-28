@@ -18,7 +18,7 @@ To address this, we introduce **AnaBFC**, an anatomy-aware framework that separa
 * `train.py`: Main script for model training.
 * `test.py`: Main script for inference and evaluation.
 
-## 🛠️ Requirements
+## Requirements
 
 * Python 3.8
 * PyTorch (CUDA support recommended)
