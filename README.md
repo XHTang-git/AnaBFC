@@ -1,36 +1,25 @@
 # AnaBFC: Bias Field Correction for Whole-Body MRI with Weak Anatomical Supervision
 
-This repository contains the official PyTorch implementation of the paper **"Bias Field Correction for Whole-Body MRI with Weak Anatomical Supervision"**. 
+Bias Field Correction for Whole-Body MRI with Weak Anatomical Supervision.
 
-## 📖 Overview
+## Overview
 
-Bias field correction is particularly challenging in whole-body MRI, where acquisition-related intensity inhomogeneity and organ-dependent anatomical contrast often vary at similar spatial scales across a large field of view. Conventional methods based on local homogeneity can reduce intensity inhomogeneity while also weakening tissue contrast and lesion conspicuity.
+Bias field correction in whole-body MRI is difficult because MRI artifacts and normal organ contrast often look similar across a large field of view[cite: 1]. Conventional methods struggle to tell them apart, sometimes removing important anatomical details.
 
-We present **AnaBFC**, an anatomy-aware framework for bias field correction in whole-body MRI trained with weak anatomical supervision. 
-* **Training:** AnaBFC uses coarse tissue masks to define where intensity consistency should be encouraged, regularizes the estimated bias field with smoothness and unit-mean constraints, and leverages unlabeled scans through consistency regularization. It also introduces *Anatomy-aware Contrast Calibration (AnaCC)* to discourage the bias estimate from absorbing normal anatomical contrast.
-* **Inference:** At inference, AnaBFC requires no anatomical masks and takes only the input MRI volume.
+To address this, we introduce **AnaBFC**, an anatomy-aware framework that separates acquisition artifacts from normal tissue signals[cite: 1]. Using weak anatomical supervision, AnaBFC successfully removes intensity inhomogeneity while preserving essential anatomical structures and image contrast.
 
-## 📂 Repository Structure
 
-The project is organized as follows:
+## Repository Structure
 
-* `data/`: Contains dataloaders and data processing scripts for the MRI volumes.
-* `model/`: Defines the AnaBFC network architectures.
-* `option/`: Contains configuration files (e.g., hyperparameters, paths) for training and testing setups.
-* `util/`: Contains utility functions, including metrics (SSIM, CV computation) and logging tools.
-* `train.py`: The main script for training the AnaBFC model.
-* `test.py`: The main script for running inference/testing on new MRI volumes.
+* `data/`: Dataloaders and processing scripts.
+* `model/`: Network architectures for the AnaBFC framework.
+* `option/`: Configuration files (hyperparameters, paths, etc.).
+* `util/`: Utility functions, including metrics and logging.
+* `train.py`: Main script for model training.
+* `test.py`: Main script for inference and evaluation.
 
 ## 🛠️ Requirements
 
-The code has been tested under the following environment:
 * Python 3.8
-* PyTorch (with CUDA 12.6 support)
-* Visdom (for real-time training visualization)
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/yourusername/2018013129-WBFC.git](https://github.com/yourusername/2018013129-WBFC.git)
-   cd 2018013129-WBFC
+* PyTorch (CUDA support recommended)
+* Visdom
