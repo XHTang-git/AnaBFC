@@ -352,7 +352,7 @@ class AnaBFC(BaseModel):
         Uniform_U = torch.cat((self.TissueNorm_M.squeeze(0).unsqueeze(1), fake_U_repeated), dim=1)
 
         C_u = self.netTissueNorm.forward(Uniform_U)
-        C_u = torch.clamp(C_u, 0.1, 10)
+        C_u = torch.clamp(C_u, 0.2, 8)
 
         uniform_template = torch.zeros_like(self.fake_U)
         for num in range(num_classes):
@@ -380,8 +380,9 @@ class AnaBFC(BaseModel):
             self.loss_Luniform_mean = torch.tensor(0.0, device=device)
         print("loss_Luniform_train:",self.loss_Luniform_train)
         print("loss_Luniform_mean:",self.loss_Luniform_mean)
+        print("train_C_u", C_u)
 
-        self.loss_LTN_train = self.loss_Luniform_train + self.loss_Luniform_mean
+        self.loss_LTN_train = self.loss_Luniform_train*2 + self.loss_Luniform_mean
         self.loss_LTN_train.backward(retain_graph=True)
 
         C_u_copy = C_u.detach()
@@ -392,7 +393,7 @@ class AnaBFC(BaseModel):
             max_shift=4,
             low_range=(1200, 8000),
             sigma_range=(0.5, 1.5),
-            kernel_size=3,
+            kernel_size=5,
             clip_min=0.03,
             clip_max=5.0
         )
@@ -402,7 +403,7 @@ class AnaBFC(BaseModel):
         if self.i % 15 == 0:
             visShow(V_gen, images11, "V_gen")
 
-        real_V_repeated = V_gen.detach().repeat(num_tissues, 1, 1, 1, 1)
+        real_V_repeated = V_gen.detach().repeat(num_classes, 1, 1, 1, 1)
         Uniform_V = torch.cat((self.TissueNorm_M.squeeze(0).unsqueeze(1), real_V_repeated), dim=1)
 
         C_v = self.netTissueNorm.forward(Uniform_V)
@@ -441,7 +442,8 @@ class AnaBFC(BaseModel):
                 Uniform_U = torch.cat((self.TissueNorm_M.squeeze(0).unsqueeze(1), fake_U_repeated), dim=1)
 
                 C_u = self.netTissueNorm.forward(Uniform_U)
-                C_u = torch.clamp(C_u, 0.2, 10)
+                print("infer_C_u",C_u)
+                C_u = torch.clamp(C_u, 0.2, 8)
                 C_u_detach = C_u.detach()
 
                 uniform_template = torch.zeros_like(self.fake_U)
@@ -480,7 +482,7 @@ class AnaBFC(BaseModel):
                 detached_fake_B,
                 max_rot_deg=5.0,
                 max_shift=4,
-                low_range=(1200, 10000),
+                low_range=(1200, 8000),
                 sigma_range=(0.5, 1.5),
                 kernel_size=3,
                 clip_min=0.03,
@@ -492,6 +494,7 @@ class AnaBFC(BaseModel):
             augment_U = augment_image / augment_B
             augment_U = torch.clamp(augment_U, min=0, max=15)
             self.loss_CR = self.criterionL1(augment_U, detached_fake_U)
+            print("loss_CR:",self.loss_CR)
             self.loss_G = self.loss_G + self.loss_CR
 
         self.loss_G.backward()
