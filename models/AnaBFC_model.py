@@ -361,22 +361,55 @@ class AnaBFC(BaseModel):
             normalized_tissue_pixels = tissue_pixels * C_u[num]
             uniform_template += normalized_tissue_pixels
 
+        # combined_mask = (self.TissueNorm_M.sum(dim=1, keepdim=True) > 0).float()
+        # masked_uniform_template = uniform_template * combined_mask
+        #
+        # if self.i % 15 == 0:
+        #     visShow(masked_uniform_template, images9, "uniform_template")
+        #
+        # num_pixels = combined_mask.sum()
+        # if num_pixels > 0:
+        #     mean_unorm = masked_uniform_template.sum() / num_pixels
+        #     std_unorm = torch.sqrt(
+        #         (((masked_uniform_template - mean_unorm) ** 2) * combined_mask).sum() / num_pixels
+        #     )
+        #     self.loss_Luniform_train = std_unorm / (mean_unorm + 1e-8)
+        #     self.loss_Luniform_mean = torch.abs(1 - mean_unorm)
+        # else:
+        #     self.loss_Luniform_train = torch.tensor(0.0, device=device)
+        #     self.loss_Luniform_mean = torch.tensor(0.0, device=device)
         combined_mask = (self.TissueNorm_M.sum(dim=1, keepdim=True) > 0).float()
         masked_uniform_template = uniform_template * combined_mask
-
         if self.i % 15 == 0:
             visShow(masked_uniform_template, images9, "uniform_template")
-
+        # -------------------------
+        # 1) global uniformity loss
+        # -------------------------
         num_pixels = combined_mask.sum()
         if num_pixels > 0:
-            mean_unorm = masked_uniform_template.sum() / num_pixels
-            std_unorm = torch.sqrt(
-                (((masked_uniform_template - mean_unorm) ** 2) * combined_mask).sum() / num_pixels
-            )
+            mean_unorm = masked_uniform_template.sum() / (num_pixels + 1e-8)
+            var_unorm = (((masked_uniform_template - mean_unorm) ** 2) * combined_mask).sum() / (num_pixels + 1e-8)
+            std_unorm = torch.sqrt(var_unorm + 1e-8)
             self.loss_Luniform_train = std_unorm / (mean_unorm + 1e-8)
-            self.loss_Luniform_mean = torch.abs(1 - mean_unorm)
         else:
             self.loss_Luniform_train = torch.tensor(0.0, device=device)
+        # ---------------------------------------
+        # 2) per-organ mean-to-1 normalization loss
+        # ---------------------------------------
+        self.loss_Luniform_mean = torch.tensor(0.0, device=device)
+        valid_region_count = 0
+        num_classes = self.TissueNorm_M.shape[1]
+        for num in range(num_classes):
+            tissue_mask = self.TissueNorm_M[:, num:num + 1, :, :, :]  # [B,1,D,H,W]
+            tissue_pixels = uniform_template * tissue_mask
+            tissue_num_pixels = tissue_mask.sum()
+            if tissue_num_pixels > 0:
+                tissue_mean = tissue_pixels.sum() / (tissue_num_pixels + 1e-8)
+                self.loss_Luniform_mean += torch.abs(tissue_mean - 1.0)
+                valid_region_count += 1
+        if valid_region_count > 0:
+            self.loss_Luniform_mean = self.loss_Luniform_mean / valid_region_count
+        else:
             self.loss_Luniform_mean = torch.tensor(0.0, device=device)
         print("loss_Luniform_train:",self.loss_Luniform_train)
         print("loss_Luniform_mean:",self.loss_Luniform_mean)
@@ -442,8 +475,8 @@ class AnaBFC(BaseModel):
                 Uniform_U = torch.cat((self.TissueNorm_M.squeeze(0).unsqueeze(1), fake_U_repeated), dim=1)
 
                 C_u = self.netTissueNorm.forward(Uniform_U)
-                print("infer_C_u",C_u)
                 C_u = torch.clamp(C_u, 0.2, 8)
+                print("infer_C_u",C_u)
                 C_u_detach = C_u.detach()
 
                 uniform_template = torch.zeros_like(self.fake_U)
