@@ -8,8 +8,7 @@ from torch.autograd import Variable
 import util.util as util
 from .base_model import BaseModel
 from . import networks3d as networks
-from util.loss_functions import bias_mean_loss, smoothing_loss, \
-    RetinexLoss, SegLoss
+from util.loss_functions import bias_mean_loss, smoothing_loss, SegLoss
 import visdom
 import math
 import torch.nn.functional as F
@@ -253,7 +252,6 @@ class AnaBFC(BaseModel):
             self.criterionSmooth = smoothing_loss()
             self.criterionSeg = SegLoss()
             self.criterionBMean = bias_mean_loss()
-            self.criterionRetinex = RetinexLoss()
             # initialize optimizers
             self.optimizer_G = torch.optim.Adam(self.netG.parameters(),
                                                 lr=opt.lr, betas=(opt.beta1, 0.999),weight_decay=1e-4)
