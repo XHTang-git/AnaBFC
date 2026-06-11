@@ -1,20 +1,18 @@
 import SimpleITK as sitk
 import numpy as np
-import SimpleITK as sitk
-import numpy as np
 from scipy.ndimage import binary_dilation, binary_erosion
 import os
-path="./down_source/"
+path="./source/"
 
 for dir,_,files in sorted(os.walk(path)):
     for filename in files:
         if "IP.mhd" in filename:
-            ori = sitk.ReadImage("./down_source/"+filename, sitk.sitkFloat32)
+            ori = sitk.ReadImage("./source/"+filename, sitk.sitkFloat32)
             ori_np = sitk.GetArrayFromImage(ori)
-            mask_np = sitk.GetArrayFromImage(sitk.ReadImage("./down_source/"+filename.strip(".mhd")+"total_mr.nii.gz"))
+            mask_np = sitk.GetArrayFromImage(sitk.ReadImage("./source/"+filename.strip(".mhd")+"total_mr.nii.gz"))
 
-            W_np = sitk.GetArrayFromImage(sitk.ReadImage("./all_N4_224_W and F3/"+filename.strip("IP.mhd")+"W_mask.nii.gz"))
-            F_np = sitk.GetArrayFromImage(sitk.ReadImage("./all_N4_224_W and F3/"+filename.strip("IP.mhd")+"F_mask.nii.gz"))
+            W_np = sitk.GetArrayFromImage(sitk.ReadImage("./W/"+filename.strip("IP.mhd")+"W_mask.nii.gz"))
+            F_np = sitk.GetArrayFromImage(sitk.ReadImage("./F/"+filename.strip("IP.mhd")+"F_mask.nii.gz"))
 
             # 器官标签
             organ_order = [
